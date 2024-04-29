@@ -1,0 +1,220 @@
+[gd_scene load_steps=12 format=3 uid="uid://bkxi0kdhq5h1a"]
+
+[ext_resource type="Texture2D" uid="uid://bbrccn3q5a7wr" path="res://sprites/sprites/campo.png" id="1_500s3"]
+[ext_resource type="Texture2D" uid="uid://ts26suhu2kau" path="res://sprites/sprites/barrier1.png" id="2_ewc1j"]
+[ext_resource type="Texture2D" uid="uid://cxwxuvx68cstb" path="res://sprites/sprites/player_1.png" id="3_6v2r8"]
+[ext_resource type="Texture2D" uid="uid://cqvgpnnnpt386" path="res://sprites/sprites/player2.png" id="4_eeqef"]
+[ext_resource type="Texture2D" uid="uid://csi0e2kgqivfl" path="res://sprites/sprites/ball.png" id="5_qkrva"]
+[ext_resource type="FontFile" uid="uid://bd7jnuxf0lbsn" path="res://the_bold_font/THE BOLD FONT - FREE VERSION - 2023.otf" id="6_xes8o"]
+[ext_resource type="AudioStream" uid="uid://cne7dl1jlb6u0" path="res://assets/pong.wav" id="7_i26ug"]
+
+[sub_resource type="GDScript" id="GDScript_qk6x2"]
+resource_name = "Main"
+script/source = "extends Node
+
+#variaveis da bola
+var dir_x = 1
+var dir_y = -1
+var speed = 200
+
+var p1 = 0
+var p2 = 8
+
+func _ready():
+	randomize()
+	speed = int(randf_range(200, 500))
+
+func _process(delta):
+	ball(delta)
+	player_1()
+	player_2()
+	gameover(delta)
+	
+func ball(delta):
+	get_node(\"ball/ball_col\").position.x += speed * dir_x * delta
+	get_node(\"ball/ball_col\").position.y += speed * dir_y * delta
+	
+	if $ball/ball_col.position.x > 700:
+		$ball/ball_col.position.x = 0
+		$ball/ball_col.position.y = 0
+		dir_x *= -1
+		randomize()
+		speed = int(randf_range(200, 500))
+		p1 += 1
+		$Control/p1.text = str(p1)
+		
+	elif $ball/ball_col.position.x < -700:
+		$ball/ball_col.position.x = 0
+		$ball/ball_col.position.y = 0
+		dir_x *= -1
+		randomize()
+		speed = int(randf_range(200, 500))
+		p2 += 1
+		$Control/p2.text = str(p2)
+	
+func _on_barreira_col_area_entered(area):
+	if area.name == \"ball_col\":
+		dir_y *= -1
+		$sound/pow.play()
+	
+	
+func player_1():
+	if Input.is_action_pressed(\"up_w\"):
+		$play1/player_col.position.y -= 5
+	elif Input.is_action_pressed(\"down_s\"):
+		$play1/player_col.position.y += 5
+		
+	if $play1/player_col.position.y > 225:
+		$play1/player_col.position.y = 225
+	elif $play1/player_col.position.y < -225:
+		$play1/player_col.position.y = -225
+
+func player_2():
+	if Input.is_action_pressed(\"ui_down\"):
+		$play2/player_col.position.y += 5
+	elif Input.is_action_pressed(\"ui_up\"):
+		$play2/player_col.position.y -= 5
+	
+	if $play2/player_col.position.y > 225:
+		$play2/player_col.position.y = 225
+	elif $play2/player_col.position.y < -225:
+		$play2/player_col.position.y = -225
+
+
+func _on_player_col_area_entered(area):
+	if area.name == \"ball_col\":
+		dir_x *= -1
+		speed += 25
+		$sound/pow.play()
+		
+func gameover(delta):
+	if p1 or p2 >= 9:
+		var p1 = 0
+		var p2 = 0
+		
+		
+
+	
+
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_c6mfl"]
+size = Vector2(1451, 75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_empkr"]
+size = Vector2(36, 148)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_irixt"]
+radius = 21.0238
+
+[node name="main" type="Node"]
+script = SubResource("GDScript_qk6x2")
+
+[node name="bg" type="Node2D" parent="."]
+
+[node name="background" type="Sprite2D" parent="bg"]
+position = Vector2(0, 1)
+texture = ExtResource("1_500s3")
+centered = false
+
+[node name="barreira1" type="Node2D" parent="."]
+
+[node name="barreira_col" type="Area2D" parent="barreira1"]
+
+[node name="Sprite2D" type="Sprite2D" parent="barreira1/barreira_col"]
+texture = ExtResource("2_ewc1j")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="barreira1/barreira_col"]
+position = Vector2(657.5, 27.5)
+shape = SubResource("RectangleShape2D_c6mfl")
+
+[node name="barreira2" type="Node2D" parent="."]
+
+[node name="barreira_col" type="Area2D" parent="barreira2"]
+position = Vector2(0, 656)
+
+[node name="Sprite2D" type="Sprite2D" parent="barreira2/barreira_col"]
+position = Vector2(-4, 1)
+texture = ExtResource("2_ewc1j")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="barreira2/barreira_col"]
+position = Vector2(644, 39)
+shape = SubResource("RectangleShape2D_c6mfl")
+
+[node name="play1" type="Node2D" parent="."]
+position = Vector2(80, 360)
+
+[node name="player_col" type="Area2D" parent="play1"]
+position = Vector2(0, -1)
+
+[node name="Sprite2D" type="Sprite2D" parent="play1/player_col"]
+texture = ExtResource("3_6v2r8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="play1/player_col"]
+shape = SubResource("RectangleShape2D_empkr")
+
+[node name="play2" type="Node2D" parent="."]
+position = Vector2(1200, 360)
+
+[node name="player_col" type="Area2D" parent="play2"]
+
+[node name="Sprite2D" type="Sprite2D" parent="play2/player_col"]
+texture = ExtResource("4_eeqef")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="play2/player_col"]
+shape = SubResource("RectangleShape2D_empkr")
+
+[node name="ball" type="Node2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="ball_col" type="Area2D" parent="ball"]
+
+[node name="Sprite2D" type="Sprite2D" parent="ball/ball_col"]
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("5_qkrva")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ball/ball_col"]
+position = Vector2(-1, -1)
+shape = SubResource("CircleShape2D_irixt")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="p1" type="Label" parent="Control"]
+layout_mode = 0
+offset_left = 438.0
+offset_top = 62.0
+offset_right = 568.0
+offset_bottom = 190.0
+theme_override_fonts/font = ExtResource("6_xes8o")
+theme_override_font_sizes/font_size = 80
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="p2" type="Label" parent="Control"]
+layout_mode = 0
+offset_left = 711.0
+offset_top = 65.0
+offset_right = 841.0
+offset_bottom = 193.0
+theme_override_fonts/font = ExtResource("6_xes8o")
+theme_override_font_sizes/font_size = 80
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="sound" type="Node" parent="."]
+
+[node name="pow" type="AudioStreamPlayer2D" parent="sound"]
+stream = ExtResource("7_i26ug")
+
+[connection signal="area_entered" from="barreira1/barreira_col" to="." method="_on_barreira_col_area_entered"]
+[connection signal="area_entered" from="barreira2/barreira_col" to="." method="_on_barreira_col_area_entered"]
+[connection signal="area_entered" from="play1/player_col" to="." method="_on_player_col_area_entered"]
+[connection signal="area_entered" from="play2/player_col" to="." method="_on_player_col_area_entered"]
